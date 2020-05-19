@@ -1,0 +1,1 @@
+Going to look at various MC simulations and track which neutral particles make up the pi0 and eta in the gamma p -> pi0 eta analysis. DSelector current writes the thrownTopology and composition of pi0__eta into text files which then is read in by a python program in jupyter notebook. The notebook reogranizes and displays the composition information.
