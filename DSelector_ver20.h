@@ -32,6 +32,11 @@ Int_t getParents( Int_t* thrownID, vector<Int_t> parentIDs, vector<Int_t> thrown
 struct topology {
 	TString locThrownTopology;
 	TString composition;
+	TString beamProtonID;
+	TString spectroscopicID;
+	double chiSq;
+	double unusedEnergy;
+	Int_t nUnusedShowers;
 };
 
 class DSelector_ver20 : public DSelector

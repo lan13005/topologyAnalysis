@@ -104,7 +104,7 @@ void DSelector_ver20::Init(TTree *locTree)
 	}
 
 	for (int i=0; i<200; ++i){ // there is a maximum of 200 in this case. No specific reason. we defnitiely want it larger than nthreads though
-		string filename="/d/grid15/ln16/pi0eta/testing/pi0eta/logFile/composition_"+to_string(i)+".txt";
+		string filename="/d/grid13/ln16/topologyAnalysis/logFile/data/composition_"+to_string(i)+".txt";
 		ifstream ifile(filename.c_str());
 		if (!ifile) { //if the file does not exist then we will open it and make our output file link to it and break the for loop to continue with the program
 			compositionFile.open(filename.c_str(),std::ios_base::trunc);
@@ -156,7 +156,7 @@ void DSelector_ver20::Init(TTree *locTree)
 Bool_t DSelector_ver20::Process(Long64_t locEntry)
 {
 	++eventNum;
-	if (eventNum>100){
+	if (eventNum>10000){
 		Abort("Lawrence... your max number of events is reached...");
 	}
 	//++iterToRun;
@@ -332,247 +332,36 @@ Bool_t DSelector_ver20::Process(Long64_t locEntry)
 			else { composition += "_"+parents_phs[iph]; }
 		}
 
+
+		TString beamProtonID = to_string(locBeamID)+"_"+to_string(locProtonTrackID);
+		TString spectroscopicID = to_string(locPhoton1NeutralID)
+			+"_"+to_string(locPhoton2NeutralID)
+			+"_"+to_string(locPhoton3NeutralID)
+			+"_"+to_string(locPhoton4NeutralID);
+        	double locUnusedEnergy = dComboWrapper->Get_Energy_UnusedShowers();
+		Int_t locNumUnusedShowers = dComboWrapper->Get_NumUnusedShowers();
 		//compositionFile << "none " << locThrownTopology << " " << composition << endl;
 		topology someTopology;
 		someTopology.locThrownTopology = locThrownTopology;
 		someTopology.composition = composition;
+		someTopology.beamProtonID = beamProtonID;
+		someTopology.spectroscopicID = spectroscopicID;
+		someTopology.chiSq = locChiSqKinFit;
+		someTopology.unusedEnergy = locUnusedEnergy;
+		someTopology.nUnusedShowers = locNumUnusedShowers;
 		topologyMap["none"].push_back(someTopology);
-		if ( locChiSqKinFit < 13.277 ){
-			//compositionFile << "locChiSqKinFit " << locThrownTopology << " " << composition << endl;
-			someTopology = topology();
-			someTopology.locThrownTopology = locThrownTopology;
-			someTopology.composition = composition;
-			topologyMap["locChiSqKinFit"].push_back(someTopology);
-		}
-        	double locUnusedEnergy = dComboWrapper->Get_Energy_UnusedShowers();
-		if ( locUnusedEnergy < 0.010 ) { 
-			//compositionFile << "locUnusedEnergy " << locThrownTopology << " " << composition << endl;
-			someTopology = topology();
-			someTopology.locThrownTopology = locThrownTopology;
-			someTopology.composition = composition;
-			topologyMap["locUnusedEnergy"].push_back(someTopology);
-		}
-                double showerQuality1 = dPhoton1Wrapper->Get_Shower_Quality();
-                double showerQuality2 = dPhoton2Wrapper->Get_Shower_Quality();
-                double showerQuality3 = dPhoton3Wrapper->Get_Shower_Quality();
-                double showerQuality4 = dPhoton4Wrapper->Get_Shower_Quality();
-		if ( (showerQuality1 > 0.5)*(showerQuality2 > 0.5)*(showerQuality3 > 0.5)*(showerQuality4 > 0.5) ){
-			//compositionFile << "showerQuality " << locThrownTopology << " " << composition << endl;
-			someTopology = topology();
-			someTopology.locThrownTopology = locThrownTopology;
-			someTopology.composition = composition;
-			topologyMap["showerQuality"].push_back(someTopology);
-		}
-
-
-
-
-
-// ==========================================================================================================
-// This section is for outputting the consituents of the eta and pi
-// ==========================================================================================================
- 		//cout << "--------------- Next combo ----------" << endl;
-		//Int_t thrownID_ph1;
-		//Particle_t locPID;
-		//Int_t locParentIndex;
-		//thrownID_ph1 = dPhoton1Wrapper->Get_ThrownIndex();
-		//Int_t locParentPID;
-
-		//// The order of the bool array is:
-		//// { from omega, is a primary photon, not thrown / fake }
-		//string isPhoton1 = "";
-		//string isPhoton2 = "";
-		//string isPhoton3 = "";
-		//string isPhoton4 = "";
-
-
-		//cout << "PHOTON1" << endl;
-		//cout << "--- Reconstructed P4 ---" << endl;
-		//locPhoton1P4.Print();
-		//if ( thrownID_ph1 != -1 ) { // if its matched to a thrown particle
-		//	dThrownWrapper->Set_ArrayIndex( thrownID_ph1  );
-		//	Particle_t locPID = dThrownWrapper->Get_PID();
-		//	locParentIndex = dThrownWrapper->Get_ParentIndex();
-		//	if (thrownPIDs[locParentIndex] == 7 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon1 matched with thrown particle  PID " << locPID << " with a pi0 parent" << endl;
-		//		isPhoton1 = "0";
-		//	}
-		//	else if (thrownPIDs[locParentIndex] == 17 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon1 matched with thrown particle  PID " << locPID << " with a eta parent" << endl;
-		//		isPhoton1 = "1";
-		//	}
-		//	else {
-		//		cout << "Photon1 has no parent, parentID: " << thrownPIDs[locParentIndex] << endl;
-		//	}
-		//	cout << "--- Matched Thrown P4 ---" << endl;
-		//	thrown_p4s[thrownID_ph1].Print();
+		//if ( locChiSqKinFit < 13.277 ){
+		//	topologyMap["locChiSqKinFit"].push_back(someTopology);
 		//}
-		//else {
-		//	cout << "Photon1 matched with no thrown particle..." << endl;
-		//	isPhoton1 = "2";
+		//if ( locUnusedEnergy < 0.010 ) { 
+		//	topologyMap["locUnusedEnergy"].push_back(someTopology);
 		//}
-	
-		//Int_t thrownID_ph2 = dPhoton2Wrapper->Get_ThrownIndex();
-		//cout << "PHOTON2" << endl;
-		//cout << "--- Reconstructed P4 ---" << endl;
-		//locPhoton2P4.Print();
-		//if ( thrownID_ph2 != -1 ) {
-		//	dThrownWrapper->Set_ArrayIndex( thrownID_ph2  );
-		//	locPID = dThrownWrapper->Get_PID();
-		//	locParentIndex = dThrownWrapper->Get_ParentIndex();
-		//	if (thrownPIDs[locParentIndex] == 7 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon2 matched with thrown particle  PID " << locPID << " with a pi0 parent" << endl;
-		//		isPhoton2 = "0";
-		//	}
-		//	else if (thrownPIDs[locParentIndex] == 17 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon2 matched with thrown particle  PID " << locPID << " with a eta parent" << endl;
-		//		isPhoton2 = "1";
-		//	}
-		//	else {
-		//		cout << "Photon2 has no parent, parentID: " << thrownPIDs[locParentIndex] << endl;
-		//	}
-		//	dThrownWrapper->Set_ArrayIndex( thrownID_ph2 );
-		//	cout << "--- Matched Thrown P4 ---" << endl;
-		//	thrown_p4s[thrownID_ph2].Print();
-		//}
-		//else {
-		//	cout << "Photon2 matched with no thrown particle..." << endl;
-		//	isPhoton2 = "2";
-		//}
-
-		//Int_t thrownID_ph3 = dPhoton3Wrapper->Get_ThrownIndex();
-		//cout << "PHOTON3" << endl;
-		//cout << "--- Reconstructed P4 ---" << endl;
-		//locPhoton3P4.Print();
-		//if ( thrownID_ph3 != -1 ) {
-		//	dThrownWrapper->Set_ArrayIndex( thrownID_ph3  );
-		//	locPID = dThrownWrapper->Get_PID();
-		//	locParentIndex = dThrownWrapper->Get_ParentIndex();
-		//	if (thrownPIDs[locParentIndex] == 7 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon3 matched with thrown particle  PID " << locPID << " with a pi0 parent" << endl;
-		//		isPhoton3 = "0";
-		//	}
-		//	else if (thrownPIDs[locParentIndex] == 17 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon3 matched with thrown particle  PID " << locPID << " with a eta parent" << endl;
-		//		isPhoton3 = "1";
-		//	}
-		//	else {
-		//		cout << "Photon3 has no parent, parentID: " << thrownPIDs[locParentIndex] << endl;
-		//	}
-		//	cout << "--- Matched Thrown P4 ---" << endl;
-		//	thrown_p4s[thrownID_ph3].Print();
-		//}
-		//else {
-		//	cout << "Photon3 matched with no thrown particle..." << endl;
-		//	isPhoton3 = "2";
-		//}
-
-		//Int_t thrownID_ph4 = dPhoton4Wrapper->Get_ThrownIndex();
-		//cout << "PHOTON4" << endl;
-		//cout << "--- Reconstructed P4 ---" << endl;
-		//locPhoton4P4.Print();
-		//if ( thrownID_ph4 != -1 ) {
-		//	dThrownWrapper->Set_ArrayIndex( thrownID_ph4  );
-		//	locPID = dThrownWrapper->Get_PID();
-		//	locParentIndex = dThrownWrapper->Get_ParentIndex();
-		//	if (thrownPIDs[locParentIndex] == 7 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon4 matched with thrown particle  PID " << locPID << " with a pi0 parent" << endl;
-		//		isPhoton4 = "0";
-		//	}
-		//	else if (thrownPIDs[locParentIndex] == 17 ){ // if the thrown particle's parent is the pi0
-		//		cout << "Photon4 matched with thrown particle  PID " << locPID << " with a eta parent" << endl;
-		//		isPhoton4 = "1";
-		//	}
-		//	else {
-		//		cout << "Photon4 has no parent, parentID: " << thrownPIDs[locParentIndex] << endl;
-		//	}
-		//	cout << "--- Matched Thrown P4 ---" << endl;
-		//	thrown_p4s[thrownID_ph4].Print();
-		//}
-		//else {
-		//	cout << "Photon4 matched with no thrown particle..." << endl;
-		//	isPhoton4 = "2";
-		//}
-
-
-		//string isPhotons = isPhoton1+isPhoton2+isPhoton3+isPhoton4;
-		//string isPi0 = isPhoton1+isPhoton2;
-		//string isEta = isPhoton3+isPhoton4;
-		//cout << "Topology: " << isPhotons << endl;
-		//// photon 1 and 2 make up the pi0
-
-		//bool applyCuts = locChiSqKinFit < 13.277;
-		//if (applyCuts){ 
-		//	if ( isPi0 == "00" ) {
-		//		dHist_countTopologyPi0->Fill(0);
-		//		dHist_countTopology->Fill(0);
-		//		dHist_pi0Mass_pi00->Fill(pi0Mass);
-		//	}
-		//	// reconstructed pion made with real gamma and one gamma from the real pion
-		//	else if ( isPi0 == "01" || isPi0 == "10" ) {
-		//		dHist_countTopologyPi0->Fill(1);
-		//		dHist_countTopology->Fill(1);
-		//	}
-		//	// reconstructed pion made with fake gamma and one gamma from the real pion
-		//	else if ( isPi0 == "02" || isPi0 == "20" ) {
-		//		dHist_countTopologyPi0->Fill(2);
-		//		dHist_countTopology->Fill(2);
-		//	}
-		//	// reconstructed pion made with fake gamma and a real gamma
-		//	else if ( isPi0 == "12" || isPi0 == "21" ) {
-		//		dHist_countTopologyPi0->Fill(3);
-		//		dHist_countTopology->Fill(3);
-		//	}
-		//	else if ( isPi0 == "11" ){
-		//		dHist_countTopologyPi0->Fill(4);
-		//		dHist_countTopology->Fill(4);
-		//	}
-		//	// reconstructed pion made with two fake gammas
-		//	else if ( isPi0 == "22" ) {
-		//		dHist_countTopologyPi0->Fill(5);
-		//		dHist_countTopology->Fill(5);
-		//	}
-		//	else{
-		//		dHist_countTopologyPi0->Fill(6);
-		//		dHist_countTopology->Fill(6);
-		//		cout << "unaccounted for pi0 topology: " << isPi0 << endl;
-		//	}
-		//	// photon 1 and 2 make up the pi0
-		//	if ( isEta == "00" ) {
-		//		dHist_countTopologyEta->Fill(0);
-		//		cout << "Eta is made with the two photons from the pion..." << endl;
-		//		dHist_countTopology->Fill(10);
-		//		cout << "Mass of thrown ph3+ph4 : " << (thrown_p4s[thrownID_ph3]+thrown_p4s[thrownID_ph4]).M() << endl;
-		//	}
-		//	// reconstructed pion made with real gamma and one gamma from the real pion
-		//	else if ( isEta == "01" || isEta == "10" ) {
-		//		dHist_countTopologyEta->Fill(1);
-		//		dHist_countTopology->Fill(11);
-		//	}
-		//	// reconstructed pion made with fake gamma and one gamma from the real pion
-		//	else if ( isEta == "02" || isEta == "20" ) {
-		//		dHist_countTopologyEta->Fill(2);
-		//		dHist_countTopology->Fill(12);
-		//	}
-		//	// reconstructed pion made with fake gamma and a real gamma
-		//	else if ( isEta == "12" || isEta == "21" ) {
-		//		dHist_countTopologyEta->Fill(3);
-		//		dHist_countTopology->Fill(13);
-		//	}
-		//	else if ( isEta == "11" ){
-		//		dHist_countTopologyEta->Fill(4);
-		//		dHist_countTopology->Fill(14);
-		//	}
-		//	// reconstructed pion made with two fake gammas
-		//	else if ( isEta == "22" ) {
-		//		dHist_countTopologyEta->Fill(5);
-		//		dHist_countTopology->Fill(15);
-		//	}
-		//	else{
-		//		dHist_countTopologyEta->Fill(6);
-		//		dHist_countTopology->Fill(16);
-		//		cout << "unaccounted for eta topology: " << isEta << endl;
-		//	}
+                //double showerQuality1 = dPhoton1Wrapper->Get_Shower_Quality();
+                //double showerQuality2 = dPhoton2Wrapper->Get_Shower_Quality();
+                //double showerQuality3 = dPhoton3Wrapper->Get_Shower_Quality();
+                //double showerQuality4 = dPhoton4Wrapper->Get_Shower_Quality();
+		//if ( (showerQuality1 > 0.5)*(showerQuality2 > 0.5)*(showerQuality3 > 0.5)*(showerQuality4 > 0.5) ){
+		//	topologyMap["showerQuality"].push_back(someTopology);
 		//}
 
 
@@ -710,14 +499,18 @@ Bool_t DSelector_ver20::Process(Long64_t locEntry)
 
 	Int_t nCombosPassed;
 	double comboWeight;
-	for ( const auto &currentPair : topologyMaps ) {
-		compositionFile << "Filling topologies with cut: " << currentPair.first << endl;
+	for ( const auto &currentPair : topologyMap ) {
+		//compositionFile << "Filling topologies with cut: " << currentPair.first << endl;
 		nCombosPassed = currentPair.second.size();
 		comboWeight = 1/nCombosPassed;
-		compositionFile << "-Num combos passed cuts: " <<
+		//compositionFile << "-Num combos passed cuts: " << nCombosPassed << endl;
 		for ( auto currentTopology : currentPair.second ) {
-			compositionFile << "--Current topology: " << currentTopology.locThrownTopology << endl;
-			compositionFile << "--Current composition: " << currentTopology.composition << endl;
+			//compositionFile << "--Current topology: " << currentTopology.locThrownTopology << endl;
+			//compositionFile << "--Current composition: " << currentTopology.composition << endl;
+			compositionFile << currentTopology.locThrownTopology << " " << currentTopology.composition << " " << 
+				eventNum << " " << currentTopology.beamProtonID << " " << currentTopology.spectroscopicID << " " << currentTopology.chiSq 
+				<< " " << currentTopology.unusedEnergy << " " << currentTopology.nUnusedShowers
+				<< endl;
 		}
 	}	
 
